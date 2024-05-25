@@ -2,10 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"os"
 
+	"dynamo/controllers"
 	repositories "dynamo/repositories/dynamodb"
 	services "dynamo/services"
 
@@ -13,10 +12,14 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 var repo *repositories.DynamoDBNamesRepository
 var service *services.NamesService
+var controller *controllers.NamesController
+var router = chi.NewRouter()
 
 func main() {
 	tableName := os.Getenv("TABLE_NAME")
@@ -25,26 +28,13 @@ func main() {
 
 	repo = repositories.NewDynamoDBNamesRepository(ddb, tableName)
 	service = services.NewNamesService(repo)
+	controller = controllers.NewNamesController(service)
 
 	lambda.Start(HandleRequest)
 }
 
-func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	name := request.QueryStringParameters["name"]
-	if name == "" {
-		return events.APIGatewayProxyResponse{StatusCode: 400, Body: "Missing 'name' query parameter"}, nil
-	}
+func HandleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	router.Get("/dynamo", controller.CreateName)
 
-	id, err := service.CreateName(name)
-	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: 500, Body: fmt.Sprintf("Failed to put item: %v", err)}, err
-	}
-
-	response := map[string]string{
-		"id":   id,
-		"name": name,
-	}
-	body, _ := json.Marshal(response)
-
-	return events.APIGatewayProxyResponse{StatusCode: 200, Body: string(body)}, nil
+	return chiadapter.New(router).ProxyWithContext(ctx, req)
 }

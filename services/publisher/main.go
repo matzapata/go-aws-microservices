@@ -18,12 +18,6 @@ var (
 	topicArn  string
 )
 
-func init() {
-	topicArn = os.Getenv("TOPIC_ARN")
-	sess := session.Must(session.NewSession())
-	snsClient = sns.New(sess)
-}
-
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	name := request.QueryStringParameters["name"]
 	if name == "" {
@@ -45,5 +39,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 }
 
 func main() {
+	topicArn = os.Getenv("TOPIC_ARN")
+	sess := session.Must(session.NewSession())
+	snsClient = sns.New(sess)
+
 	lambda.Start(HandleRequest)
 }

@@ -51,7 +51,7 @@ export class AwsCdkHelloStack extends cdk.Stack {
     });
 
     const dynamoLambda = new goLambda.GoFunction(this, 'DynamoLambda', {
-      entry: path.join(SERVICES_BASE_PATH, "dynamo", "main.go"),
+      entry: path.join(SERVICES_BASE_PATH, "dynamo", "cmd", "api", "main.go"),
       environment: {
         TABLE_NAME: table.tableName,
       },
