@@ -5,6 +5,10 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as sns_subscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as goLambda from "@aws-cdk/aws-lambda-go-alpha"
+import * as path from "path"
+
+const SERVICES_BASE_PATH = path.join(__dirname, "..", "..", "services")
+console.log("Services path", SERVICES_BASE_PATH)
 
 export class AwsCdkHelloStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -30,7 +34,7 @@ export class AwsCdkHelloStack extends cdk.Stack {
     // ========================================
 
     const helloLambda = new goLambda.GoFunction(this, 'GoLambda', {
-      entry: 'src/hello/main.go', // lambdas works by in theory this should also
+      entry: path.join(SERVICES_BASE_PATH, "hello", "main.go")
     });
 
     const helloLambdaIntegration = new apigateway.LambdaIntegration(helloLambda);
@@ -47,7 +51,7 @@ export class AwsCdkHelloStack extends cdk.Stack {
     });
 
     const dynamoLambda = new goLambda.GoFunction(this, 'DynamoLambda', {
-      entry: 'src/dynamo/main.go', // lambdas works by in theory this should also
+      entry: path.join(SERVICES_BASE_PATH, "dynamo", "main.go"),
       environment: {
         TABLE_NAME: table.tableName,
       },
@@ -67,7 +71,7 @@ export class AwsCdkHelloStack extends cdk.Stack {
 
     // Define the first Lambda function (Publisher)
     const publisherLambda = new goLambda.GoFunction(this, 'MyPublisherLambda', {
-      entry: 'src/publisher/main.go', // lambdas works by in theory this should also
+      entry: path.join(SERVICES_BASE_PATH, "publisher", "main.go"),
       environment: {
         TOPIC_ARN: topic.topicArn,
       },
@@ -87,7 +91,7 @@ export class AwsCdkHelloStack extends cdk.Stack {
 
     // Define the first Lambda function (Subscriber)
     const subscriberLambda = new goLambda.GoFunction(this, 'MySubscriberLambda', {
-      entry: 'src/subscriber/main.go',
+      entry: path.join(SERVICES_BASE_PATH, "subscriber", "main.go"),
       environment: {
         TABLE_NAME: table.tableName,
       },
