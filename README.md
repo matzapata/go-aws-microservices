@@ -12,3 +12,10 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `npx cdk deploy`  deploy this stack to your default AWS account/region
 * `npx cdk diff`    compare deployed stack with current state
 * `npx cdk synth`   emits the synthesized CloudFormation template
+
+
+# lambda
+
+`sudo docker build --platform linux/amd64 -t docker-image:test .`
+
+`docker run -d -p 9000:8080 --entrypoint /usr/local/bin/aws-lambda-rie docker-image:test ./main`
