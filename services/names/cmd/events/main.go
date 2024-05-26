@@ -7,21 +7,19 @@ import (
 	"log"
 	"os"
 
-	"micro-names/controllers"
-	repositories "micro-names/repositories/dynamodb"
-	"micro-names/services"
+	"github.com/matzapata/go-aws-microservices/services/names/controllers"
+	repositories "github.com/matzapata/go-aws-microservices/services/names/repositories/dynamodb"
+	"github.com/matzapata/go-aws-microservices/services/names/services"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/go-chi/chi/v5"
 )
 
 var repo *repositories.DynamoDBNamesRepository
 var service *services.NamesService
 var eventsController *controllers.NamesEventsController
-var router = chi.NewRouter()
 
 type SqsEvent struct {
 	Type             string `json:"Type"`
@@ -58,10 +56,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		}
 
 		// TODO: properly route to controller based on TopicArn
-		err = eventsController.CreateName(event.Message)
-		if err != nil {
-			return err
-		}
+		return eventsController.CreateName(event.Message)
 	}
 
 	return nil

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"micro-names/repositories"
+	"github.com/matzapata/go-aws-microservices/services/names/repositories"
 )
 
 type NamesService struct {

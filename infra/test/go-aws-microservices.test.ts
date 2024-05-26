@@ -1,9 +1,9 @@
 // import * as cdk from 'aws-cdk-lib';
 // import { Template } from 'aws-cdk-lib/assertions';
-// import * as GoServerlessMicroservices from '../lib/go-serverless-microservices-stack';
+// import * as GoServerlessMicroservices from '../lib/go-aws-microservices-stack';
 
 // example test. To run these tests, uncomment this file along with the
-// example resource in lib/go-serverless-microservices-stack.ts
+// example resource in lib/go-aws-microservices-stack.ts
 test('SQS Queue Created', () => {
 //   const app = new cdk.App();
 //     // WHEN

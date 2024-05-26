@@ -1,8 +1,8 @@
 {
-  "name": "go-serverless-microservices",
+  "name": "go-aws-microservices",
   "version": "0.1.0",
   "bin": {
-    "go-serverless-microservices": "bin/go-serverless-microservices.js"
+    "go-aws-microservices": "bin/go-aws-microservices.js"
   },
   "scripts": {
     "build": "tsc",

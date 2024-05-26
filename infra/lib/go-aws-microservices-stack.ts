@@ -2,16 +2,12 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as sns from 'aws-cdk-lib/aws-sns';
-import * as path from "path"
 import { HelloDeployment } from './deployments/hello-depl';
 import { NamesDeployment } from './deployments/names-depl';
 import { ProducerDeployment } from './deployments/producer-depl';
 import { DeploymentProps } from './deployments/deployment';
 
-const SERVICES_BASE_PATH = path.join(__dirname, "..", "..", "services")
-console.log("Services path", SERVICES_BASE_PATH)
-
-export class GoServerlessMicroservices extends cdk.Stack {
+export class GoAwsMicroservices extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 

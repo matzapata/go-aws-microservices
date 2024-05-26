@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"hello/controllers"
+	"github.com/matzapata/go-aws-microservices/services/hello/controllers"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"

@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"os"
-	"producer/controllers"
-	"producer/services"
+
+	"github.com/matzapata/go-aws-microservices/services/producer/controllers"
+	"github.com/matzapata/go-aws-microservices/services/producer/services"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"

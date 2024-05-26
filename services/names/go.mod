@@ -1,4 +1,4 @@
-module micro-names
+module github.com/matzapata/go-aws-microservices/services/names
 
 go 1.22.0
 

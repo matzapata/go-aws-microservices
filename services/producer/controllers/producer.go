@@ -3,7 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"producer/services"
+
+	"github.com/matzapata/go-aws-microservices/services/producer/services"
 )
 
 type ProducerController struct {

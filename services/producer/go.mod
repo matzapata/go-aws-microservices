@@ -1,4 +1,4 @@
-module producer
+module github.com/matzapata/go-aws-microservices/services/producer
 
 go 1.22.0
 

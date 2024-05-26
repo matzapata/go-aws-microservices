@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { GoServerlessMicroservices } from '../lib/go-serverless-microservices-stack';
+import { GoAwsMicroservices } from '../lib/go-aws-microservices-stack';
 
 const app = new cdk.App();
-new GoServerlessMicroservices(app, 'GoServerlessMicroservices', {
+new GoAwsMicroservices(app, 'GoServerlessMicroservices', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

@@ -2,8 +2,9 @@ package services_test
 
 import (
 	"errors"
-	"micro-names/services"
 	"testing"
+
+	"github.com/matzapata/go-aws-microservices/services/names/services"
 
 	"github.com/stretchr/testify/assert"
 )

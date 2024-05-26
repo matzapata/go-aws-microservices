@@ -2,8 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
-	"micro-names/services"
 	"net/http"
+
+	"github.com/matzapata/go-aws-microservices/services/names/services"
 )
 
 type NamesHttpController struct {

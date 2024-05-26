@@ -3,7 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"micro-names/services"
+
+	"github.com/matzapata/go-aws-microservices/services/names/services"
 )
 
 type NamesEventsController struct {

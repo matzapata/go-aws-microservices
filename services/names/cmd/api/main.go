@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"micro-names/controllers"
-	repositories "micro-names/repositories/dynamodb"
-	"micro-names/services"
+	"github.com/matzapata/go-aws-microservices/services/names/controllers"
+	repositories "github.com/matzapata/go-aws-microservices/services/names/repositories/dynamodb"
+	"github.com/matzapata/go-aws-microservices/services/names/services"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"

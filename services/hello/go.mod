@@ -1,4 +1,4 @@
-module hello
+module github.com/matzapata/go-aws-microservices/services/hello
 
 go 1.22.0
 
