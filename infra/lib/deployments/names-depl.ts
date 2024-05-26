@@ -23,24 +23,30 @@ export class NamesDeployment extends Construct {
         const table = this.createDynamoTable()
         const queue = this.createSqsQueue()
 
-        // subscribe to topics
+        // subscribe queue to topics
         props.topics["CREATE_NAME_TOPIC"].addSubscription(new subscriptions.SqsSubscription(queue))
 
-        // create lambda
-        const lambda = this.createLambda({
+        // create rest lambda ========================================
+        const restLambda = this.createRestLambda({
             environment: {
                 TABLE_NAME: table.tableName,
                 QUEUE_URL: queue.queueUrl
             }
         })
+        table.grantReadWriteData(restLambda)
+        this.addGatewayEventSource(restLambda, props.apigateway)
 
-        // grant permissions to lambda
-        queue.grantConsumeMessages(lambda);
-        table.grantReadWriteData(lambda)
 
-        // add event sources
-        this.addGatewayEventSource(lambda, props.apigateway)
-        this.addSqsEventSource(lambda, queue)
+        // create events lambda ========================================
+        const eventsLambda = this.createEventsLambda({
+            environment: {
+                TABLE_NAME: table.tableName,
+                QUEUE_URL: queue.queueUrl
+            }
+        })
+        table.grantReadWriteData(eventsLambda)
+        queue.grantConsumeMessages(eventsLambda);
+        this.addSqsEventSource(eventsLambda, queue)
     }
 
     private createDynamoTable() {
@@ -56,9 +62,18 @@ export class NamesDeployment extends Construct {
         });
     }
 
-    private createLambda(props: { environment: { [key: string]: string } }): lambda.IFunction {
-        const lambda = new goLambda.GoFunction(this, `${this.name}-lambda`, {
-            entry: path.join(SERVICES_BASE_PATH, "consumer", "main.go"),
+    private createRestLambda(props: { environment: { [key: string]: string } }): lambda.IFunction {
+        const lambda = new goLambda.GoFunction(this, `${this.name}-rest-lambda`, {
+            entry: path.join(SERVICES_BASE_PATH, "names", "cmd", "api"),
+            environment: props.environment,
+        });
+
+        return lambda
+    }
+
+    private createEventsLambda(props: { environment: { [key: string]: string } }): lambda.IFunction {
+        const lambda = new goLambda.GoFunction(this, `${this.name}-events-lambda`, {
+            entry: path.join(SERVICES_BASE_PATH, "names", "cmd", "events"),
             environment: props.environment,
         });
 
@@ -73,6 +88,8 @@ export class NamesDeployment extends Construct {
     }
 
     private addSqsEventSource(lambda: lambda.IFunction, queue: sqs.IQueue) {
-        lambda.addEventSource(new eventSources.SqsEventSource(queue));
+        lambda.addEventSource(new eventSources.SqsEventSource(queue, {
+            batchSize: 1 // Process one message per Lambda invocation
+        }));
     }
 }

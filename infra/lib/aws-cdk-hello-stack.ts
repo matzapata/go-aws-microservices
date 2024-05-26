@@ -1,12 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as sns from 'aws-cdk-lib/aws-sns';
-import * as eventtargets from 'aws-cdk-lib/aws-events-targets';
-import * as eventbridge from 'aws-cdk-lib/aws-events';
-import * as lambdatargets from 'aws-cdk-lib/aws-lambda-event-sources';
-import * as goLambda from "@aws-cdk/aws-lambda-go-alpha"
 import * as path from "path"
 import { HelloDeployment } from './deployments/hello-depl';
 import { NamesDeployment } from './deployments/names-depl';
@@ -55,7 +50,5 @@ export class AwsCdkHelloStack extends cdk.Stack {
 
     // Example events producer
     new ProducerDeployment(this, "ProducerDeployment", shared)
-
-
   }
 }

@@ -31,7 +31,7 @@ export class ProducerDeployment extends Construct {
 
     private createLambda(props: { environment: { [key: string]: string } }): IFunction {
         return new goLambda.GoFunction(this, `${this.name}-lambda`, {
-            entry: path.join(SERVICES_BASE_PATH, "producer", "main.go"),
+            entry: path.join(SERVICES_BASE_PATH, "producer", "cmd", "api"),
             environment: props.environment
         });
     }

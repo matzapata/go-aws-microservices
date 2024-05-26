@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"micro-names/services"
-	"net/http"
 )
 
 type NamesEventsController struct {
@@ -16,26 +16,22 @@ func NewNamesEventsController(service *services.NamesService) *NamesEventsContro
 	}
 }
 
-func (c *NamesEventsController) CreateName(w http.ResponseWriter, r *http.Request) {
-	name := r.URL.Query().Get("name")
-	if name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+func (c *NamesEventsController) CreateName(eventMessage string) error {
+	type MessageContent struct {
+		Name string `json:"name"`
 	}
 
-	// Call controller
-	id, err := c.service.CreateName(name)
+	var messageContent MessageContent
+	err := json.Unmarshal([]byte(eventMessage), &messageContent)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		fmt.Println("Error:", err)
+		return fmt.Errorf("could not unmarshal SQS message: %v", err)
 	}
 
-	// Write response
-	w.Header().Set("Content-Type", "application/json")
-	idJSON, err := json.Marshal(map[string]string{"id": id})
+	_, err = c.service.CreateName(messageContent.Name)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return err
 	}
-	w.Write(idJSON)
+
+	return nil
 }

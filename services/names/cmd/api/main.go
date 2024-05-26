@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"micro-names/controllers"
@@ -18,23 +19,27 @@ import (
 
 var repo *repositories.DynamoDBNamesRepository
 var service *services.NamesService
-var controller *controllers.NamesHttpController
+var httpController *controllers.NamesHttpController
 var router = chi.NewRouter()
 
-func main() {
+func init() {
 	tableName := os.Getenv("TABLE_NAME")
 	sess := session.Must(session.NewSession())
 	ddb := dynamodb.New(sess)
 
 	repo = repositories.NewDynamoDBNamesRepository(ddb, tableName)
 	service = services.NewNamesService(repo)
-	controller = controllers.NewNamesHttpController(service)
-
-	lambda.Start(HandleRequest)
+	httpController = controllers.NewNamesHttpController(service)
 }
 
-func HandleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	router.Get("/dynamo", controller.CreateName)
+func HandleRequest(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	fmt.Printf("Processing API Gateway request: %s\n", event.Body)
 
-	return chiadapter.New(router).ProxyWithContext(ctx, req)
+	router.Get("/names", httpController.CreateName)
+
+	return chiadapter.New(router).ProxyWithContext(ctx, event)
+}
+
+func main() {
+	lambda.Start(HandleRequest)
 }
