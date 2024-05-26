@@ -1,83 +1,23 @@
 
 # TODO: 
 
-- SQS and EventBus?
+- SQS and EventBus
 - Testing
-- Split code in controllers, services and so on
-- Create helpers for writing json and use DTOS
+- http and events controllers
+- ~~CDK manage in classes~~
+- ~~Split code in controllers, services and so on~~
+- Create helpers for writing json and use DTOS in shared library
 - Staging env
 
-controllers - business logic
-router - map endpoints to controllers, read and write responses
 
-# SQS and EventBus
-
-```ts
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
-import * as eventbridge from 'aws-cdk-lib/aws-events';
-import * as eventtargets from 'aws-cdk-lib/aws-events-targets';
-import * as lambdatargets from 'aws-cdk-lib/aws-lambda-event-sources';
-
-export class CdkEventbridgeSqsStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
-
-    // Create the SQS queue
-    const queue = new sqs.Queue(this, 'EventQueue');
-
-    // Create producer Lambda
-    const producerLambda = new lambda.Function(this, 'ProducerLambda', {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      handler: 'producer.handler',
-      code: lambda.Code.fromAsset('lambda/producer'),
-    });
-
-    // Create consumer Lambda
-    const consumerLambda = new lambda.Function(this, 'ConsumerLambda', {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      handler: 'consumer.handler',
-      code: lambda.Code.fromAsset('lambda/consumer'),
-    });
-
+```typescript
     // Add the SQS event source to the consumer Lambda
     consumerLambda.addEventSource(new lambdatargets.SqsEventSource(queue, {
-        batchSize: 1 // Process one message per Lambda invocation
+      batchSize: 1, // Process one message per Lambda invocation
+
     }));
-
-    // Create EventBridge rule for 'create_name' event
-    const createNameRule = new eventbridge.Rule(this, 'CreateNameRule', {
-      eventPattern: {
-        source: ['custom.create_name'],
-      },
-    });
-
-    // Create EventBridge rule for 'update_name' event
-    const updateNameRule = new eventbridge.Rule(this, 'UpdateNameRule', {
-      eventPattern: {
-        source: ['custom.update_name'],
-      },
-    });
-
-    // Add the SQS queue as the target for both EventBridge rules
-    createNameRule.addTarget(new eventtargets.SqsQueue(queue));
-    updateNameRule.addTarget(new eventtargets.SqsQueue(queue));
-
-    // Grant permissions for the producer Lambda to send messages to EventBridge
-    producerLambda.addToRolePolicy(new cdk.aws_iam.PolicyStatement({
-      actions: ['events:PutEvents'],
-      resources: ['*'], // Adjust this to be more restrictive in a real application
-    }));
-
-    // Grant the producer Lambda permissions to send messages to the SQS queue
-    queue.grantSendMessages(producerLambda);
-  }
-}
 ```
 
-## Consumer
 
 ```golang
 package main
@@ -87,92 +27,85 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
-)
-
-type SQSMessageBody struct {
-	Name string `json:"name"`
-}
-
-func HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) error {
-	for _, message := range sqsEvent.Records {
-		var body SQSMessageBody
-		if err := json.Unmarshal([]byte(message.Body), &body); err != nil {
-			log.Printf("Error unmarshalling message body: %v", err)
-			continue
-		}
-
-		// Process the message
-		fmt.Printf("Processing name: %s\n", body.Name)
-
-		// Here you can add your business logic
-		// For example, store the name in a database, call another service, etc.
-	}
-
-	return nil
-}
-
-func main() {
-	lambda.Start(HandleRequest)
-}
-```
-
-## Producer
-
-```golang
-package main
-
-import (
-	"context"
-	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/google/uuid"
 )
+
+type SQSMessageBody struct {
+	Name string `json:"name"`
+}
 
 var (
-	eventBusName string
-	ebClient     *eventbridge.EventBridge
+	ddb       *dynamodb.DynamoDB
+	tableName string
 )
 
-func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	name := request.QueryStringParameters["name"]
-	if name == "" {
-		return events.APIGatewayProxyResponse{StatusCode: 400, Body: "Missing 'name' query parameter"}, nil
+func HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) error {
+	type EventDetail struct {
+		Name string `json:"name"`
 	}
 
-	detail := map[string]string{"name": name}
-	detailJson, _ := json.Marshal(detail)
-	_, err := ebClient.PutEvents(&eventbridge.PutEventsInput{
-		Entries: []*eventbridge.PutEventsRequestEntry{
-			{
-				EventBusName: aws.String(eventBusName),
-				Source:       aws.String("custom.create_name"),
-				DetailType:   aws.String("create_name"),
-				Detail:       aws.String(string(detailJson)),
+	type CustomEvent struct {
+		Version    string      `json:"version"`
+		ID         string      `json:"id"`
+		DetailType string      `json:"detail-type"`
+		Source     string      `json:"source"`
+		Account    string      `json:"account"`
+		Time       string      `json:"time"`
+		Region     string      `json:"region"`
+		Resources  []string    `json:"resources"`
+		Detail     EventDetail `json:"detail"`
+	}
+
+	for _, message := range sqsEvent.Records {
+		var event CustomEvent
+		log.Printf("Received SQS message: %s", message.Body)
+		err := json.Unmarshal([]byte(message.Body), &event)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal SQS message body: %v", err)
+		}
+
+		// Process the event (for demonstration, just print the name)
+		fmt.Printf("Processing event: %s\n", event.Detail)
+
+		id := uuid.New().String()
+		input := &dynamodb.PutItemInput{
+			TableName: aws.String(tableName),
+			Item: map[string]*dynamodb.AttributeValue{
+				"id": {
+					S: aws.String(id),
+				},
+				"name": {
+					S: aws.String(event.Detail.Name),
+				},
 			},
-		},
-	})
+		}
 
-	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: 500, Body: fmt.Sprintf("Failed to publish to EventBridge: %v", err)}, err
+		_, err = ddb.PutItem(input)
+		if err != nil {
+			fmt.Printf("Failed to put item: %v\n", err)
+		} else {
+			fmt.Printf("Successfully processed message: ID = %s, Name = %s\n", id, event.Detail.Name)
+		}
 	}
 
-	return events.APIGatewayProxyResponse{StatusCode: 200, Body: "Event published successfully"}, nil
+	return nil
+}
+
+func init() {
+	tableName = os.Getenv("TABLE_NAME")
+	sess := session.Must(session.NewSession())
+	ddb = dynamodb.New(sess)
 }
 
 func main() {
-	eventBusName = os.Getenv("EVENT_BUS_NAME")
-	sess := session.Must(session.NewSession())
-	ebClient = eventbridge.New(sess)
-
 	lambda.Start(HandleRequest)
 }
+
 ```

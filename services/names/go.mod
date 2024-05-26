@@ -1,4 +1,4 @@
-module dynamo
+module micro-names
 
 go 1.22.0
 

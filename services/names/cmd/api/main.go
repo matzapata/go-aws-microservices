@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 
-	"dynamo/controllers"
-	repositories "dynamo/repositories/dynamodb"
-	services "dynamo/services"
+	"micro-names/controllers"
+	repositories "micro-names/repositories/dynamodb"
+	"micro-names/services"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -18,7 +18,7 @@ import (
 
 var repo *repositories.DynamoDBNamesRepository
 var service *services.NamesService
-var controller *controllers.NamesController
+var controller *controllers.NamesHttpController
 var router = chi.NewRouter()
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 
 	repo = repositories.NewDynamoDBNamesRepository(ddb, tableName)
 	service = services.NewNamesService(repo)
-	controller = controllers.NewNamesController(service)
+	controller = controllers.NewNamesHttpController(service)
 
 	lambda.Start(HandleRequest)
 }

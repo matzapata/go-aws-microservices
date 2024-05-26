@@ -1,7 +1,7 @@
 package services
 
 import (
-	repositories "dynamo/repositories"
+	"micro-names/repositories"
 )
 
 type NamesService struct {

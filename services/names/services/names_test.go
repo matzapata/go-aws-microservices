@@ -1,8 +1,8 @@
 package services_test
 
 import (
-	"dynamo/services"
 	"errors"
+	"micro-names/services"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

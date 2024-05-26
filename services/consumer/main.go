@@ -15,42 +15,42 @@ import (
 	"github.com/google/uuid"
 )
 
-type SQSMessageBody struct {
-	Name string `json:"name"`
-}
-
 var (
 	ddb       *dynamodb.DynamoDB
 	tableName string
 )
 
 func HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) error {
-	type EventDetail struct {
+	type MessageContent struct {
 		Name string `json:"name"`
 	}
 
-	type CustomEvent struct {
-		Version    string      `json:"version"`
-		ID         string      `json:"id"`
-		DetailType string      `json:"detail-type"`
-		Source     string      `json:"source"`
-		Account    string      `json:"account"`
-		Time       string      `json:"time"`
-		Region     string      `json:"region"`
-		Resources  []string    `json:"resources"`
-		Detail     EventDetail `json:"detail"`
+	type SqsEvent struct {
+		Type             string `json:"Type"`
+		MessageId        string `json:"MessageId"`
+		TopicArn         string `json:"TopicArn"`
+		Message          string `json:"Message"`
+		Timestamp        string `json:"Timestamp"`
+		SignatureVersion string `json:"SignatureVersion"`
+		Signature        string `json:"Signature"`
+		SigningCertURL   string `json:"SigningCertURL"`
+		UnsubscribeURL   string `json:"UnsubscribeURL"`
 	}
 
 	for _, message := range sqsEvent.Records {
-		var event CustomEvent
+		var event SqsEvent
 		log.Printf("Received SQS message: %s", message.Body)
 		err := json.Unmarshal([]byte(message.Body), &event)
 		if err != nil {
 			return fmt.Errorf("could not unmarshal SQS message body: %v", err)
 		}
 
-		// Process the event (for demonstration, just print the name)
-		fmt.Printf("Processing event: %s\n", event.Detail)
+		var messageContent MessageContent
+		err = json.Unmarshal([]byte(event.Message), &messageContent)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return fmt.Errorf("could not unmarshal SQS message: %v", err)
+		}
 
 		id := uuid.New().String()
 		input := &dynamodb.PutItemInput{
@@ -60,7 +60,7 @@ func HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) error {
 					S: aws.String(id),
 				},
 				"name": {
-					S: aws.String(event.Detail.Name),
+					S: aws.String(messageContent.Name),
 				},
 			},
 		}
@@ -69,7 +69,7 @@ func HandleRequest(ctx context.Context, sqsEvent events.SQSEvent) error {
 		if err != nil {
 			fmt.Printf("Failed to put item: %v\n", err)
 		} else {
-			fmt.Printf("Successfully processed message: ID = %s, Name = %s\n", id, event.Detail.Name)
+			fmt.Printf("Successfully processed message: ID = %s, Name = %s\n", id, messageContent.Name)
 		}
 	}
 

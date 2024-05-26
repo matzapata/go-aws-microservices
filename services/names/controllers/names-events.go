@@ -1,22 +1,22 @@
 package controllers
 
 import (
-	"dynamo/services"
 	"encoding/json"
+	"micro-names/services"
 	"net/http"
 )
 
-type NamesController struct {
+type NamesEventsController struct {
 	service *services.NamesService
 }
 
-func NewNamesController(service *services.NamesService) *NamesController {
-	return &NamesController{
+func NewNamesEventsController(service *services.NamesService) *NamesEventsController {
+	return &NamesEventsController{
 		service: service,
 	}
 }
 
-func (c *NamesController) CreateName(w http.ResponseWriter, r *http.Request) {
+func (c *NamesEventsController) CreateName(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	if name == "" {
 		w.WriteHeader(http.StatusBadRequest)
