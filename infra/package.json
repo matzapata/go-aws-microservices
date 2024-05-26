@@ -1,8 +1,8 @@
 {
-  "name": "aws-cdk-hello",
+  "name": "go-serverless-microservices",
   "version": "0.1.0",
   "bin": {
-    "aws-cdk-hello": "bin/aws-cdk-hello.js"
+    "go-serverless-microservices": "bin/go-serverless-microservices.js"
   },
   "scripts": {
     "build": "tsc",

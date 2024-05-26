@@ -11,7 +11,7 @@ import { DeploymentProps } from './deployments/deployment';
 const SERVICES_BASE_PATH = path.join(__dirname, "..", "..", "services")
 console.log("Services path", SERVICES_BASE_PATH)
 
-export class AwsCdkHelloStack extends cdk.Stack {
+export class GoServerlessMicroservices extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
