@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/matzapata/go-aws-microservices/services/producer/services"
+
+	"shared/helpers"
 )
 
 type ProducerController struct {
@@ -26,23 +27,9 @@ func (c *ProducerController) GetProducer(w http.ResponseWriter, r *http.Request)
 	// publish the event and write response
 	err := c.service.PublishCreateNameEvent(name)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-
-		idJSON, err := json.Marshal(map[string]string{"error": err.Error()})
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Write(idJSON)
+		helpers.ErrorJSON(w, err, http.StatusInternalServerError)
 	} else {
-		w.Header().Set("Content-Type", "application/json")
-
-		idJSON, err := json.Marshal(map[string]string{"data": "OK"})
-		if err != nil {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		w.Write(idJSON)
+		helpers.WriteJSON(w, http.StatusInternalServerError, map[string]string{"data": "OK"})
 	}
 
 }

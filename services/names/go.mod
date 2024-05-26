@@ -9,6 +9,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.9.0
+	shared/helpers v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -17,3 +18,5 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace shared/helpers => ../../shared/helpers

@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"shared/helpers"
 )
 
 type HelloController struct {
@@ -15,10 +16,6 @@ func NewHelloController() *HelloController {
 func (hc *HelloController) GetHello(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	idJSON, err := json.Marshal(map[string]string{"data": "hello!"})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Write(idJSON)
+	data := map[string]string{"data": "hello!"}
+	helpers.WriteJSON(w, http.StatusOK, data)
 }

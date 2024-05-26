@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/matzapata/go-aws-microservices/services/names/services"
+
+	"shared/helpers"
 )
 
 type NamesHttpController struct {
@@ -33,11 +34,6 @@ func (c *NamesHttpController) CreateName(w http.ResponseWriter, r *http.Request)
 	}
 
 	// write response
-	w.Header().Set("Content-Type", "application/json")
-	idJSON, err := json.Marshal(map[string]string{"id": id})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Write(idJSON)
+	res := map[string]string{"id": id}
+	helpers.WriteJSON(w, http.StatusOK, res)
 }
