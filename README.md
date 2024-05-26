@@ -3,7 +3,7 @@
 
 Serverless micro services with golang and aws cdk , and architecture overview. 
 
-![](.assets/go-microservices.png)
+![](.assets/2024-05-26-19-55-23.png)
 
 ## Deploy
 
